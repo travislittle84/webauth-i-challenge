@@ -20,16 +20,17 @@ server.get('/', (req, res) => {
 server.get('/api/users', restricted, (req, res) => {
     Users.find()
         .then(users => {
-            res.status(200).json(users)
+            res.json(users)
         })
         .catch(error => {
-            res.status(500).json({ message: "Error getting users from server"})
+            res.send(error)
         })
 })
 
 server.post('/api/register', (req, res) => {
     let user = req.body
-    user.password = bcrypt.hashSync(user.password, 14)
+    user.password = bcrypt.hashSync(user.password, 10)
+
     Users.add(user)
         .then(user => {
             res.status(201).json(user)
@@ -41,7 +42,7 @@ server.post('/api/register', (req, res) => {
 
 server.post('/api/login', (req, res) => {
     const { username, password } = req.body
-    Users.findBy(username)
+    Users.findBy({ username })
         .first()
         .then(user => {
             if (user && bcrypt.compareSync(password, user.password)) {
@@ -55,6 +56,23 @@ server.post('/api/login', (req, res) => {
         })
     
 })
+
+// function restricted(req, res, next) {
+//     const { username, password } = req.headers
+//     if (username && password) {
+//         Users.findBy({ username })
+//         .first()
+//         .then(user => {
+//             if (user && bcrypt.compareSync(password, user.password)) {
+//                 next()
+//             } else {
+//                 res.status(401).json({ message: "You shall not pass!" })
+//             }
+//         })
+//     } else {
+//         res.status(400).json({ message: 'Please provide username and password' })
+//     }
+// }
 
 
 
